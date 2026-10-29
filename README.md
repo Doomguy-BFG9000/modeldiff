@@ -380,6 +380,7 @@ Thanks to everyone who has contributed to ModelDiff. Contributors are added here
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/bfs2021"><img src="https://avatars.githubusercontent.com/u/101915083?v=4?s=80" width="80px;" alt="bfs2021"/><br /><sub><b>bfs2021</b></sub></a><br /><a href="https://github.com/OpenWave-India/modeldiff/commits?author=bfs2021" title="Code">💻</a> <a href="https://github.com/OpenWave-India/modeldiff/commits?author=bfs2021" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/anant-rajj"><img src="https://avatars.githubusercontent.com/u/317772335?v=4?s=80" width="80px;" alt="anant raj"/><br /><sub><b>anant raj</b></sub></a><br /><a href="https://github.com/OpenWave-India/modeldiff/commits?author=anant-rajj" title="Code">💻</a> <a href="https://github.com/OpenWave-India/modeldiff/commits?author=anant-rajj" title="Tests">⚠️</a> <a href="https://github.com/OpenWave-India/modeldiff/commits?author=anant-rajj" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
