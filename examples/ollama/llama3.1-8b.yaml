@@ -1,0 +1,11 @@
+# Optional: generate outputs with a local Ollama server instead of replaying.
+# Requires `ollama serve` running and the model pulled (`ollama pull llama3.1:8b`).
+id: llama3.1-8b
+provider: ollama
+model: llama3.1:8b
+base_url: http://localhost:11434
+options:
+  temperature: 0
+  seed: 42
+timeout_s: 120
+capture_output: full

@@ -1,0 +1,7 @@
+# Replays recorded outputs; no model or network needed.
+id: candidate-q4
+provider: replay
+outputs: ../recorded/candidate.json
+capture_output: full
+metadata:
+  description: Outputs recorded after the change.

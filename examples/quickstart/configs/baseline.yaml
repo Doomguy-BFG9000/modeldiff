@@ -1,0 +1,7 @@
+# Replays recorded outputs; no model or network needed.
+id: baseline-q8
+provider: replay
+outputs: ../recorded/baseline.json
+capture_output: full
+metadata:
+  description: Outputs recorded before the change.
