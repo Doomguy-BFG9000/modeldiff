@@ -1,0 +1,21 @@
+{
+  "projectName": "modeldiff",
+  "projectOwner": "OpenWave-India",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["README.md"],
+  "imageSize": 80,
+  "commit": false,
+  "commitConvention": "none",
+  "contributorsPerLine": 7,
+  "linkToUsage": false,
+  "contributors": [
+    {
+      "login": "bfs2021",
+      "name": "bfs2021",
+      "avatar_url": "https://avatars.githubusercontent.com/u/101915083?v=4",
+      "profile": "https://github.com/bfs2021",
+      "contributions": ["code", "test"]
+    }
+  ]
+}

@@ -72,6 +72,10 @@ ModelDiff aims to stay deterministic and offline-testable. Proposals that requir
 
 See [docs/architecture.md](docs/architecture.md) for where checks and providers live.
 
+## Recognition
+
+Once your first pull request is merged, you are added to the Contributors section of the README and credited in [CHANGELOG.md](CHANGELOG.md) and the release notes for the next version.
+
 ## Code of Conduct
 
 By participating you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).

@@ -1,5 +1,9 @@
 # ModelDiff
 
+[![CI](https://github.com/OpenWave-India/modeldiff/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenWave-India/modeldiff/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+
 **Regression testing for local AI.**
 
 ModelDiff is a local-first testing framework for detecting behavioral regressions across AI model versions, inference configurations, prompt templates, and runtime changes. You describe test cases in a version-controlled YAML or JSON file, run them against a baseline and a candidate configuration, and get a report of what broke, what got fixed, and what merely changed.
@@ -366,6 +370,20 @@ These are ideas, not commitments. See the issue tracker for what is being worked
 ## Contributing
 
 Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), and look for issues labelled `good first issue`. Please follow the [Code of Conduct](CODE_OF_CONDUCT.md). To report security issues, see [SECURITY.md](SECURITY.md).
+
+### Contributors
+
+Thanks to everyone who has contributed to ModelDiff. Contributors are added here, following the [All Contributors](https://allcontributors.org) specification, once their first pull request is merged. See [CHANGELOG.md](CHANGELOG.md) for what each release includes.
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/bfs2021"><img src="https://avatars.githubusercontent.com/u/101915083?v=4?s=80" width="80px;" alt="bfs2021"/><br /><sub><b>bfs2021</b></sub></a><br /><a href="https://github.com/OpenWave-India/modeldiff/commits?author=bfs2021" title="Code">💻</a> <a href="https://github.com/OpenWave-India/modeldiff/commits?author=bfs2021" title="Tests">⚠️</a></td>
+    </tr>
+  </tbody>
+</table>
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## License
 
