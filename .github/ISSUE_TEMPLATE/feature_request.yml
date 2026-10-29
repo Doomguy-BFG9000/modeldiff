@@ -1,0 +1,28 @@
+name: Feature request
+description: Propose a new check, metric, provider, report format, or other improvement.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or motivation
+      description: What regression or workflow is not covered today? A concrete example helps.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: For checks, include an output that should pass and one that should fail.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: For example, why a custom check via --plugin is not enough.
+  - type: textarea
+    id: testing
+    attributes:
+      label: How it would be tested offline
+      description: ModelDiff's tests must not need a network connection or a downloaded model.
