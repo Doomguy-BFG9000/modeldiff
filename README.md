@@ -286,7 +286,7 @@ To compare two quantizations, point two configs at two model tags, run both, and
 ## CLI reference
 
 ```
-modeldiff validate SUITE [--plugin P ...]
+modeldiff validate SUITE [SUITE ...] [--plugin P ...]
 modeldiff run SUITE --config CFG --output OUT [--tag T ...] [--capture full|hash|none]
               [--plugin P ...] [--enforce-performance] [--fail-on-failure]
 modeldiff compare BASELINE CANDIDATE [--format text|markdown|json] [--output FILE]
@@ -294,6 +294,15 @@ modeldiff compare BASELINE CANDIDATE [--format text|markdown|json] [--output FIL
               [--allow-suite-mismatch] [--exit-zero]
 modeldiff report RESULTS [--format text|markdown|json] [--output FILE]
 modeldiff schema {suite,config,result} [--output FILE]
+```
+
+`validate` checks every supplied suite file, prints an `OK:` line for each valid
+file, and reports each invalid file on stderr. It checks the remaining files
+after an error and exits with code 2 if any file is invalid; otherwise it exits
+with code 0. Any `--plugin` options apply to all files:
+
+```bash
+modeldiff validate suites/support.yaml suites/billing.yaml --plugin checks.py
 ```
 
 | Exit code | Meaning |
