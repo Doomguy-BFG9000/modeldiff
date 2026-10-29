@@ -45,6 +45,140 @@ def test_validate_ok(quickstart, capsys):
     assert "with 9 cases" in capsys.readouterr().out
 
 
+def test_init_starter_runs_offline(tmp_path, monkeypatch, capsys):
+    def no_network(*args, **kwargs):
+        raise AssertionError("network access attempted")
+
+    monkeypatch.setattr(socket, "socket", no_network)
+    monkeypatch.setattr(socket, "create_connection", no_network)
+    target = tmp_path / "starter project"
+    assert main(["init", str(target)]) == 0
+    instructions = capsys.readouterr().out
+    for command in ("modeldiff validate", "modeldiff run", "modeldiff compare"):
+        assert command in instructions
+    assert {str(p.relative_to(target).as_posix()) for p in target.rglob("*") if p.is_file()} == {
+        "suite.yaml",
+        "configs/baseline.yaml",
+        "configs/candidate.yaml",
+        "recorded/baseline.json",
+        "recorded/candidate.json",
+    }
+    suite = str(target / "suite.yaml")
+    assert main(["validate", suite]) == 0
+    for name in ("baseline", "candidate"):
+        recorded = json.loads((target / "recorded" / f"{name}.json").read_text(encoding="utf-8"))
+        assert "placeholder" in recorded["metadata"]["description"].lower()
+        assert (
+            main(
+                [
+                    "run",
+                    suite,
+                    "--config",
+                    str(target / "configs" / f"{name}.yaml"),
+                    "--output",
+                    str(target / "out" / f"{name}.json"),
+                ]
+            )
+            == 0
+        )
+    assert (
+        main(["compare", str(target / "out/baseline.json"), str(target / "out/candidate.json")])
+        == 0
+    )
+    comparison = capsys.readouterr().out
+    assert "NO REGRESSIONS" in comparison
+
+
+def test_init_accepts_an_existing_empty_directory(tmp_path):
+    target = tmp_path / "empty"
+    target.mkdir()
+    assert main(["init", str(target)]) == 0
+    assert (target / "suite.yaml").is_file()
+
+
+def test_init_refuses_nonempty_directory_without_changing_files(tmp_path, capsys):
+    original = tmp_path / "suite.yaml"
+    original.write_text("keep this", encoding="utf-8")
+    assert main(["init", str(tmp_path)]) == 2
+    assert original.read_text(encoding="utf-8") == "keep this"
+    assert list(tmp_path.iterdir()) == [original]
+    assert "--force" in capsys.readouterr().err
+
+
+def test_init_force_replaces_starter_files_and_preserves_unrelated_files(tmp_path):
+    existing = tmp_path / "suite.yaml"
+    existing.write_text("replace this", encoding="utf-8")
+    unrelated = tmp_path / "notes.txt"
+    unrelated.write_text("keep this", encoding="utf-8")
+    assert main(["init", str(tmp_path), "--force"]) == 0
+    assert unrelated.read_text(encoding="utf-8") == "keep this"
+    assert main(["validate", str(existing)]) == 0
+
+
+def test_init_force_preserves_a_hard_linked_unrelated_file(tmp_path):
+    target = tmp_path / "project"
+    target.mkdir()
+    unrelated = tmp_path / "notes.txt"
+    unrelated.write_text("keep this", encoding="utf-8")
+    (target / "suite.yaml").hardlink_to(unrelated)
+    assert main(["init", str(target), "--force"]) == 0
+    assert unrelated.read_text(encoding="utf-8") == "keep this"
+    assert main(["validate", str(target / "suite.yaml")]) == 0
+
+
+def test_init_prints_absolute_paths_for_a_leading_hyphen_directory(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    assert main(["init", "./-demo"]) == 0
+    instructions = capsys.readouterr().out
+    assert str(tmp_path / "-demo" / "suite.yaml") in instructions
+
+
+def test_init_refuses_a_file_as_target(tmp_path, capsys):
+    target = tmp_path / "not-a-directory"
+    target.write_text("keep this", encoding="utf-8")
+    assert main(["init", str(target), "--force"]) == 2
+    assert target.read_text(encoding="utf-8") == "keep this"
+    assert str(target) in capsys.readouterr().err
+
+
+def test_init_refuses_a_linked_destination_outside_target(tmp_path, capsys):
+    target = tmp_path / "project"
+    target.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    original = outside / "baseline.yaml"
+    original.write_text("keep this", encoding="utf-8")
+    link = target / "configs"
+    if sys.platform == "win32":
+        subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(link), str(outside)],
+            check=True,
+            capture_output=True,
+        )
+    else:
+        link.symlink_to(outside, target_is_directory=True)
+    assert main(["init", str(target), "--force"]) == 2
+    assert original.read_text(encoding="utf-8") == "keep this"
+    assert set(outside.iterdir()) == {original}
+    assert not (target / "suite.yaml").exists()
+    assert capsys.readouterr().err.startswith("error:")
+
+
+@pytest.mark.parametrize("blocked", ["suite.yaml", "configs"])
+def test_init_preflights_blocked_paths_before_overwriting(tmp_path, capsys, blocked):
+    path = tmp_path / blocked
+    if blocked == "suite.yaml":
+        path.mkdir()
+    else:
+        path.write_text("keep this", encoding="utf-8")
+    assert main(["init", str(tmp_path), "--force"]) == 2
+    assert not (tmp_path / "recorded").exists()
+    if blocked == "configs":
+        assert path.read_text(encoding="utf-8") == "keep this"
+        assert not (tmp_path / "suite.yaml").exists()
+    assert capsys.readouterr().err.startswith("error:")
+
+
 def test_validate_without_plugin_explains_how_to_fix(quickstart, capsys):
     assert main(["validate", quickstart["suite"]]) == 2
     err = capsys.readouterr().err

@@ -13,6 +13,7 @@ import copy
 import importlib
 import importlib.util
 import json
+import shlex
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -26,8 +27,32 @@ from modeldiff.providers import ReplayProvider, build_provider
 from modeldiff.report import FORMATS, render_comparison, render_run
 from modeldiff.results import RESULT_SCHEMA, load_run, save_run
 from modeldiff.runner import run_suite
+from modeldiff.templates import create_starter
 
 EXIT_OK, EXIT_REGRESSION, EXIT_INVALID = 0, 1, 2
+
+
+def _shell_path(path: Path) -> str:
+    text = str(path)
+    if sys.platform == "win32":
+        return "'" + text.replace("'", "''") + "'"
+    return shlex.quote(text)
+
+
+def cmd_init(args: argparse.Namespace) -> int:
+    directory = Path(args.directory).absolute()
+    create_starter(directory, force=args.force)
+    suite = _shell_path(directory / "suite.yaml")
+    baseline = _shell_path(directory / "out/baseline.json")
+    candidate = _shell_path(directory / "out/candidate.json")
+    print(f"Created starter files in {directory}. Recorded outputs are hand-written placeholders.")
+    print("Run these commands in PowerShell:" if sys.platform == "win32" else "Run these commands:")
+    print(f"modeldiff validate {suite}")
+    for name, output in (("baseline", baseline), ("candidate", candidate)):
+        config = _shell_path(directory / "configs" / f"{name}.yaml")
+        print(f"modeldiff run {suite} --config {config} --output {output}")
+    print(f"modeldiff compare {baseline} {candidate}")
+    return EXIT_OK
 
 
 def load_plugin(spec: str) -> None:
@@ -146,6 +171,13 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     plugin_help = "module or .py file that registers custom checks (repeatable)"
+
+    p = sub.add_parser("init", help="create a small offline starter suite and configs")
+    p.add_argument("directory", help="directory for the starter files")
+    p.add_argument(
+        "--force", action="store_true", help="replace starter files in a non-empty directory"
+    )
+    p.set_defaults(func=cmd_init)
 
     p = sub.add_parser("validate", help="check a suite file for errors")
     p.add_argument("suite", help="suite file (.yaml, .yml or .json)")
