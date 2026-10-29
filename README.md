@@ -192,6 +192,10 @@ Fields used by each type:
 | `tool_call` | `expected.name`, `expected.arguments`, `expected.arguments_schema` | `extract` (`code_fence`, optional) |
 | `custom` | `check` (registered name), `params` (any mapping) | none |
 
+When a classification output is outside `labels`, its failure reason lists the
+first ten allowed labels in suite order, using the configured normalization.
+Longer lists end with `...`.
+
 
 Dotted paths address nested objects and list items: `customer.name`, `items.0.sku`.
 
