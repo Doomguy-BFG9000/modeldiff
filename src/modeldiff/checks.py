@@ -180,6 +180,14 @@ def _normalize_text(text: str, options: dict[str, Any]) -> str:
     return text
 
 
+def _exact_excerpt(text: str, position: int) -> str:
+    start = max(0, position - 20)
+    end = position + 21
+    prefix = "..." if start > 0 else ""
+    suffix = "..." if end < len(text) else ""
+    return prefix + text[start:end] + suffix
+
+
 def _eval_exact(case: TestCase, output: str) -> CheckResult:
     actual = _normalize_text(output, case.options)
     expected = _normalize_text(case.expected, case.options)
@@ -189,7 +197,11 @@ def _eval_exact(case: TestCase, output: str) -> CheckResult:
         (i for i, (a, b) in enumerate(zip(actual, expected, strict=False)) if a != b),
         min(len(actual), len(expected)),
     )
-    return CheckResult(False, f"output differs from expected at character {position}")
+    return CheckResult(
+        False,
+        f"output differs from expected at character {position}: "
+        f"expected {_exact_excerpt(expected, position)!r}, got {_exact_excerpt(actual, position)!r}",
+    )
 
 
 # --- json --------------------------------------------------------------------

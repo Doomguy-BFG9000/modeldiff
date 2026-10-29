@@ -192,6 +192,7 @@ Fields used by each type:
 | `tool_call` | `expected.name`, `expected.arguments`, `expected.arguments_schema` | `extract` (`code_fence`, optional) |
 | `custom` | `check` (registered name), `params` (any mapping) | none |
 
+An `exact` mismatch reports the first differing character and quoted expected/actual excerpts from the normalized text, with up to 20 characters on either side and `...` where text is cut.
 
 Dotted paths address nested objects and list items: `customer.name`, `items.0.sku`.
 
