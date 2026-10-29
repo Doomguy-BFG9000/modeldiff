@@ -10,6 +10,7 @@ All notable changes to ModelDiff are listed here. The format follows [Keep a Cha
 - `extract: code_fence` option for `json`, `required_fields` and `tool_call` checks: parses the content of a single Markdown code fence ([#17](https://github.com/OpenWave-India/modeldiff/pull/17), by [@chiragjangiir](https://github.com/chiragjangiir), fixes [#3](https://github.com/OpenWave-India/modeldiff/issues/3)).
 - `modeldiff run` warns when a replay file has outputs for case IDs that are not in the suite ([#20](https://github.com/OpenWave-India/modeldiff/pull/20), by [@Mrun25](https://github.com/Mrun25), fixes [#5](https://github.com/OpenWave-India/modeldiff/issues/5)).
 - `modeldiff schema {suite,config,result}` prints the JSON Schema for each file format, for editor validation ([#18](https://github.com/OpenWave-India/modeldiff/pull/18), by [@faisalorakzai-lab](https://github.com/faisalorakzai-lab), fixes [#6](https://github.com/OpenWave-India/modeldiff/issues/6)).
+- Second example suite, `examples/extraction`, for structured invoice and address extraction ([#19](https://github.com/OpenWave-India/modeldiff/pull/19), by [@faisalorakzai-lab](https://github.com/faisalorakzai-lab), fixes [#7](https://github.com/OpenWave-India/modeldiff/issues/7)).
 
 ## [0.1.0] - 2026-10-29
 
