@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "note": "Hand-written fixture outputs for the quickstart. Not produced by a real model."
+  },
+  "outputs": {
+    "greeting-exact": {"output": "Hello! How can I help you today?", "latency_ms": 310},
+    "ticket-json": {
+      "output": "{\"customer\": \"Priya\", \"priority\": \"high\", \"issue\": \"Invoices page down since morning\"}",
+      "latency_ms": 820
+    },
+    "ticket-required-fields": {
+      "output": "{\"order_id\": \"8812\", \"customer\": {\"name\": \"Arjun\"}, \"items\": 2, \"shipping\": {\"city\": \"Pune\"}}",
+      "latency_ms": 640
+    },
+    "sentiment-negative": {"output": "negative", "latency_ms": 150},
+    "sentiment-positive": {"output": "neutral", "latency_ms": 155},
+    "intent-billing": {"output": "billing", "latency_ms": 148},
+    "tool-refund": {
+      "output": "{\"name\": \"create_refund\", \"arguments\": {\"order_id\": \"8812\", \"amount\": 499, \"currency\": \"INR\"}}",
+      "latency_ms": 540
+    },
+    "tool-lookup": {
+      "output": "{\"name\": \"get_order_status\", \"arguments\": {\"order_id\": \"7730\"}}",
+      "latency_ms": 420
+    },
+    "summary-length": {
+      "output": "Customer reports slow loading on the invoices page.",
+      "latency_ms": 900
+    }
+  }
+}

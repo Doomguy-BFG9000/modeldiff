@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "note": "Hand-written fixture outputs for the quickstart. Not produced by a real model."
+  },
+  "outputs": {
+    "greeting-exact": {"output": "Hello! How can I help you today?", "latency_ms": 330},
+    "ticket-json": {
+      "output": "```json\n{\"customer\": \"Priya\", \"priority\": \"high\", \"issue\": \"Invoices page down since morning\"}\n```",
+      "latency_ms": 870
+    },
+    "ticket-required-fields": {
+      "output": "{\"order_id\": \"8812\", \"customer\": {\"name\": \"Arjun\"}, \"items\": 2}",
+      "latency_ms": 610
+    },
+    "sentiment-negative": {"output": "Negative", "latency_ms": 160},
+    "sentiment-positive": {"output": "positive", "latency_ms": 158},
+    "intent-billing": {"output": "technical", "latency_ms": 151},
+    "tool-refund": {
+      "output": "{\"function\": {\"name\": \"create_refund\", \"arguments\": \"{\\\"order_id\\\": \\\"8812\\\", \\\"amount\\\": 499}\"}}",
+      "latency_ms": 560
+    },
+    "tool-lookup": {
+      "output": "{\"name\": \"get_order_status\", \"arguments\": {\"order_id\": 7730}}",
+      "latency_ms": 450
+    },
+    "summary-length": {
+      "output": "The customer says the invoices page loads slowly and wants it investigated soon.",
+      "latency_ms": 1720
+    }
+  }
+}

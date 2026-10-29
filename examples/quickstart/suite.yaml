@@ -1,0 +1,87 @@
+suite: support-assistant
+description: >
+  Example regression suite for a customer-support assistant. The outputs in
+  recorded/ are hand-written fixtures that illustrate common regressions;
+  they were not produced by a real model.
+
+cases:
+  - id: greeting-exact
+    type: exact
+    input: "Reply with exactly: Hello! How can I help you today?"
+    expected: "Hello! How can I help you today?"
+    tags: [smoke]
+
+  - id: ticket-json
+    type: json
+    input: |
+      Extract a support ticket as JSON with keys "customer", "priority" and "issue":
+      "Hi, this is Priya. My invoices page has been down since morning, it's urgent."
+    schema:
+      type: object
+      required: [customer, priority, issue]
+      properties:
+        customer: {type: string}
+        priority: {enum: [low, medium, high]}
+        issue: {type: string, minLength: 5}
+      additionalProperties: false
+    tags: [structured]
+
+  - id: ticket-required-fields
+    type: required_fields
+    input: |
+      Return the order as JSON: order 8812 for Arjun, 2 items, shipping to Pune.
+    required: [order_id, customer.name, shipping.city]
+    values:
+      shipping.city: Pune
+    tags: [structured]
+
+  - id: sentiment-negative
+    type: classification
+    input: "Classify the sentiment (positive, neutral, negative): 'The refund took three weeks.'"
+    expected: negative
+    labels: [positive, neutral, negative]
+    tags: [classification]
+
+  - id: sentiment-positive
+    type: classification
+    input: "Classify the sentiment (positive, neutral, negative): 'Support fixed it in five minutes!'"
+    expected: positive
+    labels: [positive, neutral, negative]
+    tags: [classification]
+
+  - id: intent-billing
+    type: classification
+    input: "Classify the intent (billing, technical, account): 'Why was I charged twice?'"
+    expected: billing
+    labels: [billing, technical, account]
+    tags: [classification]
+
+  - id: tool-refund
+    type: tool_call
+    input: "Customer asks for a refund of 499 INR on order 8812. Call the right tool."
+    expected:
+      name: create_refund
+      arguments_schema:
+        type: object
+        required: [order_id, amount]
+        properties:
+          order_id: {type: string}
+          amount: {type: number, exclusiveMinimum: 0}
+          currency: {type: string}
+    tags: [tools]
+
+  - id: tool-lookup
+    type: tool_call
+    input: "Look up the status of order 7730. Call the right tool."
+    expected:
+      name: get_order_status
+      arguments: {order_id: "7730"}
+    tags: [tools]
+
+  - id: summary-length
+    type: custom
+    check: max_words
+    params: {limit: 25}
+    input: "Summarize in under 25 words: the customer reports slow page loads on the invoices page."
+    performance:
+      max_latency_ms: 1500
