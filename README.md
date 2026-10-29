@@ -67,6 +67,18 @@ The package is not yet published to PyPI. When it is, the distribution name will
 
 ## Quick start
 
+To create your own small offline starter project:
+
+```bash
+modeldiff init my-tests
+```
+
+This writes a two-case suite, baseline/candidate replay configs and hand-written
+placeholder outputs, then prints the commands to validate, run and compare them.
+Both generated runs pass and compare without regressions. Replace the placeholders
+with your own recorded model outputs. An existing non-empty directory is protected;
+`--force` replaces only the five starter files and keeps unrelated files.
+
 The repository includes an example suite for a customer-support assistant, with two sets of recorded outputs. These outputs are hand-written fixtures that illustrate typical regressions. They are not real model outputs.
 
 ```bash
@@ -290,6 +302,7 @@ To compare two quantizations, point two configs at two model tags, run both, and
 ## CLI reference
 
 ```
+modeldiff init DIRECTORY [--force]
 modeldiff validate SUITE [SUITE ...] [--plugin P ...]
 modeldiff run SUITE --config CFG --output OUT [--tag T ...] [--capture full|hash|none]
               [--plugin P ...] [--enforce-performance] [--fail-on-failure]
