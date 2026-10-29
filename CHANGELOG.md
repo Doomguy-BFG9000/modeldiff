@@ -7,6 +7,7 @@ All notable changes to ModelDiff are listed here. The format follows [Keep a Cha
 ### Added
 
 - `normalize_whitespace` option for `exact` checks: collapses runs of whitespace, including newlines, before comparing ([#16](https://github.com/OpenWave-India/modeldiff/pull/16), by [@anant-rajj](https://github.com/anant-rajj), fixes [#4](https://github.com/OpenWave-India/modeldiff/issues/4)).
+- `extract: code_fence` option for `json`, `required_fields` and `tool_call` checks: parses the content of a single Markdown code fence ([#17](https://github.com/OpenWave-India/modeldiff/pull/17), by [@chiragjangiir](https://github.com/chiragjangiir), fixes [#3](https://github.com/OpenWave-India/modeldiff/issues/3)).
 
 ## [0.1.0] - 2026-10-29
 

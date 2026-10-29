@@ -3,7 +3,9 @@
   "projectOwner": "OpenWave-India",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "files": ["README.md"],
+  "files": [
+    "README.md"
+  ],
   "imageSize": 80,
   "commit": false,
   "commitConvention": "none",
@@ -15,14 +17,32 @@
       "name": "bfs2021",
       "avatar_url": "https://avatars.githubusercontent.com/u/101915083?v=4",
       "profile": "https://github.com/bfs2021",
-      "contributions": ["code", "test"]
+      "contributions": [
+        "code",
+        "test"
+      ]
     },
     {
       "login": "anant-rajj",
       "name": "anant raj",
       "avatar_url": "https://avatars.githubusercontent.com/u/317772335?v=4",
       "profile": "https://github.com/anant-rajj",
-      "contributions": ["code", "test", "doc"]
+      "contributions": [
+        "code",
+        "test",
+        "doc"
+      ]
+    },
+    {
+      "login": "chiragjangiir",
+      "name": "Chirag Jangir",
+      "avatar_url": "https://avatars.githubusercontent.com/u/184008125?v=4",
+      "profile": "https://github.com/chiragjangiir",
+      "contributions": [
+        "code",
+        "test",
+        "doc"
+      ]
     }
   ]
 }
