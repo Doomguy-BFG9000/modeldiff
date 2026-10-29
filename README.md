@@ -367,4 +367,4 @@ Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), and lo
 
 ## License
 
-The license has not been chosen yet. Until a license file is added, no rights to reuse the code are granted.
+ModelDiff is released under the [MIT License](LICENSE). Contributions are accepted under the same license.

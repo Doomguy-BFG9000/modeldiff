@@ -10,6 +10,7 @@ version = "0.1.0"
 description = "Regression testing for local AI: compare model outputs across versions, configurations, and runtimes."
 readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
 authors = [{ name = "OpenWave India" }]
 keywords = ["llm", "regression-testing", "evaluation", "ollama", "local-ai"]
 classifiers = [
