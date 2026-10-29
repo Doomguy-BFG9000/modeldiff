@@ -1,0 +1,191 @@
+"""Render runs and comparisons as text, Markdown, or JSON."""
+
+from __future__ import annotations
+
+import json
+
+from modeldiff.compare import CaseComparison, Comparison
+from modeldiff.results import RunResult
+
+FORMATS = ("text", "markdown", "json")
+
+
+def _ms(value: float | None) -> str:
+    return "-" if value is None else f"{value:.1f} ms"
+
+
+def _short(text: str | None, limit: int = 100) -> str:
+    if not text:
+        return ""
+    text = " ".join(text.split())
+    return text if len(text) <= limit else text[: limit - 3] + "..."
+
+
+def _md_cell(text: str) -> str:
+    return text.replace("|", "\\|")
+
+
+# --- single run --------------------------------------------------------------
+
+
+def render_run(run: RunResult, fmt: str = "text") -> str:
+    if fmt == "json":
+        return json.dumps(run.to_dict(), indent=2, ensure_ascii=False)
+    counts = run.counts()
+    total = len(run.results)
+    header = f"{run.suite} @ {run.config_id}: {counts['pass']}/{total} passed, {counts['fail']} failed, {counts['error']} errors"
+    problems = [r for r in run.results if r.status != "pass"]
+    if fmt == "markdown":
+        lines = [f"# ModelDiff run: {run.suite} @ `{run.config_id}`", "", header, ""]
+        if problems:
+            lines += ["| Case | Type | Status | Reason |", "| --- | --- | --- | --- |"]
+            lines += [
+                f"| `{r.case_id}` | {r.type} | {r.status} | {_md_cell(_short(r.reason or r.error))} |"
+                for r in problems
+            ]
+        return "\n".join(lines)
+    lines = [header]
+    for r in problems:
+        lines.append(
+            f"  {r.status.upper():5} {r.case_id} [{r.type}]: {_short(r.reason or r.error)}"
+        )
+    for r in run.results:
+        for w in r.warnings:
+            lines.append(f"  WARN  {r.case_id}: {w}")
+    if run.unavailable_metrics:
+        lines.append(f"Unavailable metrics: {', '.join(run.unavailable_metrics)}")
+    return "\n".join(lines)
+
+
+# --- comparison --------------------------------------------------------------
+
+
+def _summary_line(comp: Comparison) -> str:
+    c = comp.counts()
+    total = len(comp.cases)
+    return (
+        f"{total} cases: {c['regression']} regressed, {c['fixed']} fixed, "
+        f"{c['still_failing']} still failing, {c['unchanged_pass']} passing in both, "
+        f"{len(comp.behavior_changes)} passing with changed output"
+    )
+
+
+def _verdict(comp: Comparison) -> str:
+    if comp.regressions:
+        return f"REGRESSIONS FOUND ({len(comp.regressions)})"
+    return "NO REGRESSIONS"
+
+
+def _transition(case: CaseComparison) -> str:
+    return f"{case.baseline_status or 'missing'} -> {case.candidate_status or 'missing'}"
+
+
+def _latency_lines(comp: Comparison) -> list[str]:
+    lat = comp.latency
+    if lat is None:
+        return ["Latency: no timing data in both runs."]
+    pct = lat.change_pct
+    change = "n/a" if pct is None else f"{pct:+.1f}%"
+    sources = (
+        f"baseline {'/'.join(lat.baseline_sources)}, candidate {'/'.join(lat.candidate_sources)}"
+    )
+    return [
+        f"Latency (median over {lat.cases} cases): {_ms(lat.baseline_median_ms)} -> "
+        f"{_ms(lat.candidate_median_ms)} ({change}; {sources})"
+    ]
+
+
+def render_comparison(comp: Comparison, fmt: str = "text") -> str:
+    if fmt == "json":
+        return json.dumps(comp.to_dict(), indent=2, ensure_ascii=False)
+    if fmt == "markdown":
+        return _render_markdown(comp)
+    return _render_text(comp)
+
+
+def _render_text(comp: Comparison) -> str:
+    lines = [
+        f"ModelDiff comparison: {comp.suite}",
+        f"Baseline: {comp.baseline_id}    Candidate: {comp.candidate_id}",
+        "",
+        f"{_verdict(comp)}  -  {_summary_line(comp)}",
+    ]
+
+    def section(title: str, items: list[CaseComparison], show_reason: bool = True) -> None:
+        if not items:
+            return
+        lines.extend(["", f"{title} ({len(items)}):"])
+        for c in items:
+            reason = f": {_short(c.candidate_reason)}" if show_reason and c.candidate_reason else ""
+            lines.append(f"  {c.case_id} [{c.type}] {_transition(c)}{reason}")
+
+    section("Regressions", comp.regressions)
+    section("Fixed", comp.by_category("fixed"), show_reason=False)
+    section("Still failing", comp.by_category("still_failing"))
+    section("Passing with changed output (review, not a regression)", comp.behavior_changes, False)
+    section("Missing in candidate", comp.by_category("missing_in_candidate"), False)
+    section("Missing in baseline", comp.by_category("missing_in_baseline"), False)
+
+    if comp.label_changes:
+        lines.extend(["", f"Classification changes ({len(comp.label_changes)}):"])
+        for c in comp.label_changes:
+            lines.append(f"  {c.case_id}: {c.label_change[0]!r} -> {c.label_change[1]!r}")
+
+    lines.append("")
+    lines.extend(_latency_lines(comp))
+    if comp.latency_threshold_pct is not None:
+        if comp.slowdowns:
+            lines.append(f"Slower than +{comp.latency_threshold_pct:g}%:")
+            for c in comp.slowdowns:
+                lines.append(
+                    f"  {c.case_id}: {_ms(c.baseline_duration_ms)} -> {_ms(c.candidate_duration_ms)}"
+                )
+        else:
+            lines.append(f"No case slower than +{comp.latency_threshold_pct:g}%.")
+    for note in comp.notes:
+        lines.append(f"Note: {note}")
+    return "\n".join(lines)
+
+
+def _render_markdown(comp: Comparison) -> str:
+    lines = [
+        f"# ModelDiff comparison: {comp.suite}",
+        "",
+        f"- Baseline: `{comp.baseline_id}`",
+        f"- Candidate: `{comp.candidate_id}`",
+        f"- Result: **{_verdict(comp)}**",
+        f"- {_summary_line(comp)}",
+        "",
+        "| Case | Type | Change | Output changed | Latency | Candidate reason |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    order = {
+        cat: i
+        for i, cat in enumerate(
+            (
+                "regression",
+                "fixed",
+                "still_failing",
+                "missing_in_candidate",
+                "missing_in_baseline",
+                "unchanged_pass",
+            )
+        )
+    }
+    for c in sorted(comp.cases, key=lambda c: order[c.category]):
+        changed = {True: "yes", False: "no", None: "unknown"}[c.output_changed]
+        if c.label_change:
+            changed += f" (`{c.label_change[0]}` -> `{c.label_change[1]}`)"
+        latency = f"{_ms(c.baseline_duration_ms)} -> {_ms(c.candidate_duration_ms)}"
+        if c.slowdown:
+            latency += " (slower)"
+        reason = _md_cell(_short(c.candidate_reason)) if c.category != "unchanged_pass" else ""
+        lines.append(
+            f"| `{c.case_id}` | {c.type} | {c.category.replace('_', ' ')} ({_transition(c)}) "
+            f"| {changed} | {latency} | {reason} |"
+        )
+    lines.append("")
+    lines.extend(_latency_lines(comp))
+    for note in comp.notes:
+        lines.extend(["", f"> Note: {note}"])
+    return "\n".join(lines)
