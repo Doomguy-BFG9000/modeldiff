@@ -371,7 +371,7 @@ These are ideas, not commitments. See the issue tracker for what is being worked
 
 Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), and look for issues labelled `good first issue`. Please follow the [Code of Conduct](CODE_OF_CONDUCT.md). To report security issues, see [SECURITY.md](SECURITY.md).
 
-If ModelDiff is useful to you, a star on the repository helps other people find it. For project news, follow [OpenWave India on LinkedIn](https://www.linkedin.com/company/145385028).
+If ModelDiff is useful to you, a star on the repository helps other people find it. For project news, follow [OpenWave India on LinkedIn](https://www.linkedin.com/company/openwave-india).
 
 ### Contributors
 
