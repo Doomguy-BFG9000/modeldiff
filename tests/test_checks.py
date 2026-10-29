@@ -17,7 +17,9 @@ def test_exact_strips_whitespace_by_default(make_case):
 def test_exact_is_case_sensitive_by_default(make_case):
     result = evaluate(make_case(type="exact", expected="Hello"), "hello")
     assert not result.passed
-    assert result.reason == "output differs from expected at character 0"
+    assert result.reason == (
+        "output differs from expected at character 0: expected 'Hello', got 'hello'"
+    )
 
 
 def test_exact_ignore_case_and_no_strip(make_case):
@@ -28,7 +30,10 @@ def test_exact_ignore_case_and_no_strip(make_case):
 
 def test_exact_reports_position_for_prefix(make_case):
     result = evaluate(make_case(type="exact", expected="abc"), "abcdef")
-    assert result.reason.endswith("character 3")
+    assert not result.passed
+    assert result.reason == (
+        "output differs from expected at character 3: expected 'abc', got 'abcdef'"
+    )
 
 
 def test_exact_normalize_whitespace(make_case):
@@ -51,7 +56,140 @@ def test_exact_normalize_whitespace_reports_position_on_normalized_text(make_cas
     )
     result = evaluate(case, "Hello\r\n  there")
     assert not result.passed
-    assert result.reason == "output differs from expected at character 6"
+    assert result.reason == (
+        "output differs from expected at character 6: expected 'Hello world', got 'Hello there'"
+    )
+
+
+@pytest.mark.parametrize(
+    ("before", "after", "position", "expected_excerpt", "actual_excerpt"),
+    [
+        ("", "r" * 25, 0, "X" + "r" * 20 + "...", "Y" + "r" * 20 + "..."),
+        (
+            "l" * 25,
+            "r" * 25,
+            25,
+            "..." + "l" * 20 + "X" + "r" * 20 + "...",
+            "..." + "l" * 20 + "Y" + "r" * 20 + "...",
+        ),
+        ("l" * 25, "", 25, "..." + "l" * 20 + "X", "..." + "l" * 20 + "Y"),
+        (
+            "l" * 20,
+            "r" * 20,
+            20,
+            "l" * 20 + "X" + "r" * 20,
+            "l" * 20 + "Y" + "r" * 20,
+        ),
+        (
+            "l" * 21,
+            "r" * 21,
+            21,
+            "..." + "l" * 20 + "X" + "r" * 20 + "...",
+            "..." + "l" * 20 + "Y" + "r" * 20 + "...",
+        ),
+    ],
+    ids=["start", "middle", "end", "exact-window", "one-beyond-window"],
+)
+def test_exact_excerpt_shows_context_and_marks_only_cut_text(
+    make_case, before, after, position, expected_excerpt, actual_excerpt
+):
+    result = evaluate(make_case(type="exact", expected=before + "X" + after), before + "Y" + after)
+    assert not result.passed
+    assert result.reason == (
+        f"output differs from expected at character {position}: "
+        f"expected {expected_excerpt!r}, got {actual_excerpt!r}"
+    )
+
+
+@pytest.mark.parametrize(
+    ("expected", "actual", "position"),
+    [("", "hello", 0), ("hello", "", 0), ("abcdef", "abc", 3)],
+)
+def test_exact_excerpt_when_one_string_ends(make_case, expected, actual, position):
+    result = evaluate(make_case(type="exact", expected=expected), actual)
+    assert not result.passed
+    assert result.reason == (
+        f"output differs from expected at character {position}: expected {expected!r}, got {actual!r}"
+    )
+
+
+@pytest.mark.parametrize("expected_ends_first", [True, False])
+def test_exact_excerpt_for_long_prefix(make_case, expected_ends_first):
+    shorter, longer = "a" * 30, "a" * 30 + "b" * 30
+    short_excerpt, long_excerpt = "..." + "a" * 20, "..." + "a" * 20 + "b" * 21 + "..."
+    expected, actual = (shorter, longer) if expected_ends_first else (longer, shorter)
+    expected_excerpt, actual_excerpt = (
+        (short_excerpt, long_excerpt) if expected_ends_first else (long_excerpt, short_excerpt)
+    )
+    result = evaluate(make_case(type="exact", expected=expected), actual)
+    assert not result.passed
+    assert result.reason == (
+        "output differs from expected at character 30: "
+        f"expected {expected_excerpt!r}, got {actual_excerpt!r}"
+    )
+
+
+@pytest.mark.parametrize(
+    ("expected", "actual", "options", "position", "expected_excerpt", "actual_excerpt"),
+    [
+        ("  ABCx\n", " \tABCy \r\n", {}, 3, "ABCx", "ABCy"),
+        (" hello", "\thello", {"strip": False}, 0, " hello", "\thello"),
+        (
+            "  Straße \tBLUE\n",
+            "\tSTRASSE\n  GREEN ",
+            {"ignore_case": True, "normalize_whitespace": True},
+            8,
+            "strasse blue",
+            "strasse green",
+        ),
+    ],
+    ids=["strip", "no-strip", "casefold-and-whitespace"],
+)
+def test_exact_excerpt_uses_normalized_text(
+    make_case, expected, actual, options, position, expected_excerpt, actual_excerpt
+):
+    result = evaluate(make_case(type="exact", expected=expected, options=options), actual)
+    assert not result.passed
+    assert result.reason == (
+        f"output differs from expected at character {position}: "
+        f"expected {expected_excerpt!r}, got {actual_excerpt!r}"
+    )
+
+
+def test_exact_excerpt_quotes_newlines_backslashes_and_unicode(make_case):
+    expected, actual = "a\n'\"\\é🙂X", "a\n'\"\\é🙂Y"
+    result = evaluate(make_case(type="exact", expected=expected), actual)
+    assert not result.passed
+    assert result.reason == (
+        f"output differs from expected at character 7: expected {expected!r}, got {actual!r}"
+    )
+    assert "\n" not in result.reason
+    assert "\\n" in result.reason
+
+
+@pytest.mark.parametrize(
+    "fill", ["a", "\x00", "\U000e0001"], ids=["ascii", "nul", "unicode-escape"]
+)
+def test_exact_excerpt_stays_bounded_for_long_strings(make_case, fill):
+    before, after = fill * 100_000, fill * 100_000
+    result = evaluate(make_case(type="exact", expected=before + "X" + after), before + "Y" + after)
+    expected_excerpt = "..." + fill * 20 + "X" + fill * 20 + "..."
+    actual_excerpt = "..." + fill * 20 + "Y" + fill * 20 + "..."
+    assert not result.passed
+    assert result.reason == (
+        "output differs from expected at character 100000: "
+        f"expected {expected_excerpt!r}, got {actual_excerpt!r}"
+    )
+    assert len(result.reason) < 1_000
+
+
+def test_exact_normalized_match_has_no_failure_excerpt(make_case):
+    case = make_case(
+        type="exact",
+        expected=" Straße \n BLUE ",
+        options={"ignore_case": True, "normalize_whitespace": True},
+    )
+    assert evaluate(case, "STRASSE\tblue") == CheckResult(True)
 
 
 # --- json --------------------------------------------------------------------

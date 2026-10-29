@@ -208,6 +208,7 @@ When a classification output is outside `labels`, its failure reason lists the
 first ten allowed labels in suite order, using the configured normalization.
 Longer lists end with `...`.
 
+An `exact` mismatch reports the first differing character and quoted expected/actual excerpts from the normalized text, with up to 20 characters on either side and `...` where text is cut.
 
 Dotted paths address nested objects and list items: `customer.name`, `items.0.sku`.
 
